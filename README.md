@@ -1,6 +1,9 @@
 <h1 align="center">🚀 AdaptiClip</h1>
 <p align="center">🗂️ A Clipboard Management Tool With Plugin Support for Automatic Text Conversion (eg., Dates, Times, JSON, etc.).</p>
 
+[![AdaptiClip](https://hackatime-badge.hackclub.com/U091SE37HUN/Adapti-Clip?aliases=AdaptiClip&color=505050&label=AdaptiClip)](https://github.com/nishindudu/AdaptiClip)
+[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fnishindudu%2FAdaptiClip&countColor=%23606060&style=flat)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fnishindudu%2FAdaptiClip)
+
 ## ✨ Features
 - 🧩 Plugin architecture for easy extensibility
 - 📅 Includes plugins for various text formats (dates, times, JSON, etc.)
