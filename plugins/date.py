@@ -3,15 +3,9 @@ import dateutil.parser
 class DateConverter():
     def __init__(self, CONFIG):
         self.config = CONFIG
-
-        if not self.config.has_section(str(self.__class__.__name__)):
-            self.config.add_section(str(self.__class__.__name__))
-        if not self.config.has_option(str(self.__class__.__name__), "format"):
-            self.config.set(str(self.__class__.__name__), "format", "%%d-%%m-%%Y")
-        with open("config.ini", "w") as configfile:
-            self.config.write(configfile)
-
-        self.date_format = CONFIG.get(str(self.__class__.__name__), "format")
+        
+        self.config.write("format", "%%d-%%m-%%Y")
+        self.date_format = self.config.read("format")
 
     def detect(self, text):
         try:

@@ -7,6 +7,7 @@ import argparse
 import logging
 import sys
 import keyboard
+import inspect
 
 VERBOSITY_MAP = {
     "silent": logging.CRITICAL + 1,
@@ -69,9 +70,57 @@ def load_config():
     with open("config.ini", "w") as configfile:
         CONFIG.write(configfile)
 
+class SafeConfig():
+    def __init__(self, config, config_path):
+        self.config = config
+        self.config_path = config_path
+        self.caller_class = None
+
+    def create_section(self, class_name=None):
+        if class_name is None:
+            caller = inspect.stack()[1]
+            self.caller_class = caller[0].f_locals["self"].__class__.__name__
+            class_name = str(self.caller_class)
+
+        if not os.path.exists(self.config_path):
+            open(self.config_path, "a").close()
+        
+        if not self.config.has_section(class_name):
+            self.config.add_section(class_name)
+        
+        with open(self.config_path, "w") as configfile:
+            self.config.write(configfile)
+
+    def read(self, key):
+        caller = inspect.stack()[1]
+        self.caller_class = caller[0].f_locals["self"].__class__.__name__
+        
+        if not os.path.exists(self.config_path):
+            open(self.config_path, "a").close()
+
+        if not self.config.has_section(self.caller_class):
+            self.create_section(self.caller_class)
+
+        value = self.config.get(self.caller_class, key)
+        return value
+
+    def write(self, key, value):
+        caller = inspect.stack()[1]
+        self.caller_class = caller[0].f_locals["self"].__class__.__name__
+
+        if not self.config.has_section(self.caller_class):
+            self.create_section(self.caller_class)
+        self.config.set(self.caller_class, key, value)
+
+        with open(self.config_path, "w") as configfile:
+            self.config.write(configfile)
+
 def import_plugins():
     global PLUGINS
+    global PLUGINS_ON_KEYPRESS
+    global CONFIG
     logging.debug("Importing plugins...")
+    safe = SafeConfig(CONFIG, "config.ini")
     for file in os.listdir("plugins"):
         if file.endswith(".py"):
             module_name = file[:-3]
@@ -84,9 +133,9 @@ def import_plugins():
                     if isinstance(attr, type):
                         if CONFIG.get(str(attr.__name__), "on_keypress", fallback='false') == 'true':
                             key = CONFIG.get(str(attr.__name__), "hotkey", fallback=None)
-                            PLUGINS_ON_KEYPRESS[attr(CONFIG)] = key
+                            PLUGINS_ON_KEYPRESS[attr(safe)] = key
                             continue
-                        PLUGINS.append(attr(CONFIG))
+                        PLUGINS.append(attr(safe))
             except Exception as e:
                 logging.error(f"Error importing plugin {module_name}: {e}")
     logging.debug(f"Always on Plugins: {[plug.__class__.__name__ for plug in PLUGINS]}, Plugins On Key Press: {[plug.__class__.__name__ for plug in PLUGINS_ON_KEYPRESS]}")
@@ -151,7 +200,7 @@ class hotkeys():
     def on_key_press(self, plugin, text):
         logging.debug(f"Hotkey pressed for plugin: {plugin.__class__.__name__}")
         if plugin.detect(text):
-            # logging.debug(f"Detected text: {text}")
+            logging.debug(f"Plugin {plugin.__class__.__name__} detected text.")
             res = plugin.convert(text)
             if res:
                 pyperclip.copy(res)

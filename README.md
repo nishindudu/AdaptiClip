@@ -87,11 +87,14 @@ To create a new plugin for AdaptiClip, follow these steps:
      class MyPlugin():
           def __init__(self, CONFIG): #Should accept the config object
                 self.config = CONFIG
-                if not self.config.has_section(str(self.__class__.__name__)):
-                     self.config.add_section(str(self.__class__.__name__)) #Required and all attributes must be set in this section
-                # Set any required attributes
+                self.config.create_section() # Required only if there are no attributes to set (auto created on setting attributes)
+
                 # If your plugin should only work on hotkeys, set on_keypress = true in the config file
-                # define preferred hotkey in the hotkey option
+                self.config.write("on_keypress", "true") # Example for hotkey only mode
+                self.config.write("hotkey", "ctrl+alt+m") # Define preferred hotkey
+                # Set any required attributes
+
+                key = self.config.read("key") # Example for reading a key
 
                 # Initialize your plugin here
 
@@ -107,7 +110,8 @@ To create a new plugin for AdaptiClip, follow these steps:
 > `detect` and `convert` methods are **required** for all plugins.
 
 > <b>⚠️ IMPORTANT</b><br>
-> The plugin must create a section with its class name in the config file. All attributes required by the plugin must be set in this section.
+> All plugins must create a section in the config file.
+> If there are no attributes to be set, the section can be empty and can be created by calling `config.create_section()`.
 
 Sample plugins are available in `/plugins` folder.
 
@@ -117,16 +121,9 @@ Sample plugins are available in `/plugins` folder.
      ```python
      class MyPlugin():
           def __init__(self, CONFIG):
-                self.config = CONFIG
-                if not self.config.has_section(str(self.__class__.__name__)):
-                     self.config.add_section(str(self.__class__.__name__))
-                if not self.config.has_option(str(self.__class__.__name__), "on_keypress"):
-                     self.config.set(str(self.__class__.__name__), "on_keypress", "true") # Setting this will disable auto-conversion
-                if not self.config.has_option(str(self.__class__.__name__), "hotkey"):
-                     self.config.set(str(self.__class__.__name__), "hotkey", "ctrl+alt+m") # Setting a hotkey is required if your plugin is in hotkey only mode
-
-                with open("config.ini", "w") as configfile:
-                     self.config.write(configfile) # Write the config to the file
+               self.config = CONFIG
+               self.config.write("on_keypress", "true") # Setting this will disable auto-conversion
+               self.config.write("hotkey", "ctrl+alt+m") # Setting a hotkey is required if your plugin is in hotkey only mode
      ```
      Example ini file:
      ```ini

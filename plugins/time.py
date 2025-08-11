@@ -4,15 +4,9 @@ from datetime import datetime
 class TimeConverter():
     def __init__(self, CONFIG):
         self.config = CONFIG
-
-        if not self.config.has_section(str(self.__class__.__name__)):
-            self.config.add_section(str(self.__class__.__name__))
-        if not self.config.has_option(str(self.__class__.__name__), "format"):
-            self.config.set(str(self.__class__.__name__), "format", "24h")
-        with open("config.ini", "w") as configfile:
-            self.config.write(configfile)
-
-        self.time_format = CONFIG.get(str(self.__class__.__name__), "format")
+        
+        self.config.write("format", "24h")
+        self.time_format = self.config.read("format")
     
     def is_12h_format(self, text):
         try:
